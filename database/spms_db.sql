@@ -86,7 +86,7 @@ CREATE TABLE `system_info` (
 
 INSERT INTO `system_info` (`id`, `meta_field`, `meta_value`) VALUES
 (1, 'name', 'BuildBuddy'),
-(6, 'short_name', 'PHP - SPMS'),
+(6, 'short_name', 'BuildBuddy'),
 (11, 'logo', 'uploads/logo.png?v=1682490747'),
 (13, 'user_avatar', 'uploads/user_avatar.jpg'),
 (14, 'cover', 'uploads/cover.png?v=1682490747'),
