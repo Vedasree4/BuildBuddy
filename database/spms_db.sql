@@ -50,6 +50,7 @@ INSERT INTO `inquiry_list` (`id`, `fullname`, `contact`, `email`, `message`, `st
 CREATE TABLE `service_list` (
   `id` bigint(30) NOT NULL,
   `name` text NOT NULL,
+  `category` varchar(255) NOT NULL,
   `description` text NOT NULL,
   `image_path` text DEFAULT NULL,
   `status` tinyint(1) NOT NULL DEFAULT 1,
@@ -61,12 +62,18 @@ CREATE TABLE `service_list` (
 -- Dumping data for table `service_list`
 --
 
-INSERT INTO `service_list` (`id`, `name`, `description`, `image_path`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Carpentary', "Woodwork that wows!", 'uploads/services/1.png?v=1682479354', 1, '2023-04-26 11:22:34', '0000-00-00 00:00:00'),
-(2, 'Masonry', "Building solid foundations!", 'uploads/services/2.png?v=1682479557', 1, '2023-04-26 11:25:55', '0000-00-00 00:00:00');
-INSERT INTO `service_list` (`id`, `name`, `description`, `image_path`, `status`, `created_at`, `updated_at`) VALUES
-(3, 'Electrical installations', "Wired for perfection!", 'uploads/services/3.png?v=1682479953', 1, '2023-04-26 11:32:33', '0000-00-00 00:00:00'),
-(4, 'Waterworks', "We fix what flows!", 'uploads/services/4.png?v=1682481428', 1, '2023-04-26 11:54:43', '0000-00-00 00:00:00');
+INSERT INTO `service_list` (`id`, `name`, `category`, `description`, `image_path`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'Carpentary', 'Woodwork', "Woodwork that wows!", 'uploads/services/1.png?v=1682479354', 1, '2023-04-26 11:22:34', '0000-00-00 00:00:00'),
+(2, 'Masonry', 'Construction', "Building solid foundations!", 'uploads/services/2.png?v=1682479557', 1, '2023-04-26 11:25:55', '0000-00-00 00:00:00'),
+(3, 'Electrical installations', 'Electrical', "Wired for perfection!", 'uploads/services/3.png?v=1682479953', 1, '2023-04-26 11:32:33', '0000-00-00 00:00:00'),
+(4, 'Waterworks', 'Plumbing', "We fix what flows!", 'uploads/services/4.png?v=1682481428', 1, '2023-04-26 11:54:43', '0000-00-00 00:00:00');
+
+-- INSERT INTO `service_list` (`id`, `name`, `description`, `image_path`, `status`, `created_at`, `updated_at`) VALUES
+-- (1, 'Carpentary', "Woodwork that wows!", 'uploads/services/1.png?v=1682479354', 1, '2023-04-26 11:22:34', '0000-00-00 00:00:00'),
+-- (2, 'Masonry', "Building solid foundations!", 'uploads/services/2.png?v=1682479557', 1, '2023-04-26 11:25:55', '0000-00-00 00:00:00');
+-- INSERT INTO `service_list` (`id`, `name`, `description`, `image_path`, `status`, `created_at`, `updated_at`) VALUES
+-- (3, 'Electrical installations', "Wired for perfection!", 'uploads/services/3.png?v=1682479953', 1, '2023-04-26 11:32:33', '0000-00-00 00:00:00'),
+-- (4, 'Waterworks', "We fix what flows!", 'uploads/services/4.png?v=1682481428', 1, '2023-04-26 11:54:43', '0000-00-00 00:00:00');
 
 -- --------------------------------------------------------
 
