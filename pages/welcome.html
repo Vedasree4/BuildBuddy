@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Cards with Navigation</title>
+  <!-- <link rel="stylesheet" href="assets\css\styles.css"> -->
+  <style>
+    /* General Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    /* Navigation Bar */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f2f8fe;
+      padding: 10px 20px;
+      color: #fff;
+    }
+
+    nav .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      gap: 15px;
+    }
+
+    nav ul li {
+      display: inline;
+          color: black;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: black;
+      font-weight: bold;
+    }
+
+    nav ul li a:hover {
+      text-decoration: underline;
+    }
+
+    nav .login-button {
+      background-color: #fff;
+      color: #0066cc;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    nav .login-button:hover {
+      background-color: #f1f1f1;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 20px 0;
+      background-color: #0066cc;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      margin: 0;
+    }
+
+    /* Blog Container */
+    .blog-container {
+      display: flex;
+      overflow-x: auto;
+      padding: 20px;
+      gap: 20px;
+      scroll-snap-type: x mandatory;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      margin: 0 20px;
+    }
+
+    .blog-container::-webkit-scrollbar {
+      height: 10px;
+    }
+
+    .blog-container::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 10px;
+    }
+
+    .blog-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    /* Blog Card */
+    .blog-card {
+      flex: 0 0 300px;
+      display: flex;
+      flex-direction: column;
+      background-color: #f4f4f4;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      scroll-snap-align: start;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .blog-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .blog-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 15px;
+    }
+
+    .card-content h3 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .card-content p {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #999;
+    }
+
+    /* Quote Section */
+    .quote-section {
+      background-color: #fffbf1;
+      padding: 40px 20px;
+      text-align: center;
+      margin: 40px 0;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .quote-section h3 {
+      font-size: 1.8rem;
+      color: #ff8800;
+      margin-bottom: 10px;
+    }
+
+    .quote-section p {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: #555;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Testimonials Section */
+    .testimonials-section {
+      background-color: #f7f7f7;
+      padding: 40px 20px;
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .testimonials-section h2 {
+      font-size: 1.8rem;
+      color: #0066cc;
+      margin-bottom: 20px;
+    }
+
+    .testimonial-card {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 15px;
+      margin-bottom: 20px;
+      max-width: 350px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    .testimonial-card p {
+      font-size: 1rem;
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+
+    .testimonial-card span {
+      display: block;
+      text-align: right;
+      font-weight: bold;
+      color: #333;
+    }
+
+    /* Contact Info Section */
+    .contact-info-section {
+      background-color: #f0f8ff;
+      padding: 40px 20px;
+      text-align: center;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .contact-info-section h2 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    .contact-info-section p {
+      font-size: 1.1rem;
+      color: #555;
+    }
+
+    .contact-info-section a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+
+    .contact-info-section a:hover {
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+  
+  <!-- Header -->
+  <header>
+    <h1>Explore Our Latest Blog Posts</h1>
+  </header>
+
+  <!-- Blog Container -->
+<section class="blog-container">
+  <div class="blog-card" onclick="window.location.href='blog1.html'">
+    <img src="uploads/blogimages/image1.jpg" alt="Finding the Right Plumber">
+    <div class="card-content">
+      <h3>How to Find the Right Plumber for Your Project</h3>
+      <p>Learn essential tips for hiring a professional plumber to ensure quality service and avoid costly mistakes.</p>
+      <div class="card-meta">
+        <span>📅 February 1, 2025</span>
+        <span>⏱ 8 Min Read</span>
+      </div>
+    </div>
+  </div>
+  <div class="blog-card" onclick="window.location.href='blog2.html'">
+    <img src="uploads/blogimages/image2.jpg" alt="Choosing an Electrician">
+    <div class="card-content">
+      <h3>Choosing the Right Electrician for Your Home</h3>
+      <p>Discover what to look for when hiring an electrician, including licensing, experience, and safety standards.</p>
+      <div class="card-meta">
+        <span>📅 January 30, 2025</span>
+        <span>⏱ 10 Min Read</span>
+      </div>
+    </div>
+  </div>
+  <div class="blog-card" onclick="window.location.href='blog3.html'">
+    <img src="uploads/blogimages/image3.jpg" alt="Interior Designers">
+    <div class="card-content">
+      <h3>How to Work with an Interior Designer on Your Next Project</h3>
+      <p>Explore how to collaborate with interior designers to bring your vision to life with the right materials and style.</p>
+      <div class="card-meta">
+        <span>📅 January 25, 2025</span>
+        <span>⏱ 7 Min Read</span>
+      </div>
+    </div>
+  </div>
+  <div class="blog-card" onclick="window.location.href='blog4.html'">
+    <img src="uploads/blogimages/image4.jpg" alt="Home Renovation Tips">
+    <div class="card-content">
+      <h3>Top Tips for Hiring Contractors for Home Renovations</h3>
+      <p>Get expert advice on how to hire the best contractors for your home renovation to ensure success and peace of mind.</p>
+      <div class="card-meta">
+        <span>📅 January 18, 2025</span>
+        <span>⏱ 9 Min Read</span>
+      </div>
+    </div>
+  </div>
+  <div class="blog-card" onclick="window.location.href='blog5.html'">
+    <img src="uploads/blogimages/image5.jpg" alt="Cost-Effective Solutions">
+    <div class="card-content">
+      <h3>How to Find Cost-Effective Solutions for Your Construction Needs</h3>
+      <p>Explore ways to find affordable and reliable service providers for your construction, plumbing, and electrical needs.</p>
+      <div class="card-meta">
+        <span>📅 January 10, 2025</span>
+        <span>⏱ 10 Min Read</span>
+      </div>
+    </div>
+  </div>
+  <!-- Additional Blog Cards -->
+</section>
+
+
+  <!-- Quote Section -->
+  <section class="quote-section">
+    <h3>Inspiring Quote</h3>
+    <p>"The best way to predict the future is to build it." – Peter Drucker</p>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="testimonials-section">
+    <h2>What Our Users Say</h2>
+    <div class="testimonial-card">
+      <p>"The cost estimator feature saved me time and money. Highly recommended!"</p>
+      <span>- Sarah J.</span>
+    </div>
+    <div class="testimonial-card">
+      <p>"BuildBuddy connected me with a professional electrician in minutes. Great service!"</p>
+      <span>- Michael B.</span>
+    </div>
+  </section>
+
+  <!-- Contact Info Section -->
+  <section class="contact-info-section">
+    <h2>Contact Us</h2>
+    <p>If you have any questions or need assistance, feel free to reach out to us.</p>
+    <p>Email: <a href="mailto:info@buildbuddy.com">info@buildbuddy.com</a></p>
+    <p>Phone: <a href="tel:+1234567890">+123-456-7890</a></p>
+  </section>
+
+</body>
+</html>
