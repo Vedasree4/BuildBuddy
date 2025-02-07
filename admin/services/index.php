@@ -28,7 +28,12 @@
 							<th>Name</th>
 							<th>Category</th>
 							<th>Desciption</th>
+							<th>Price Details</th>
+							<th>Price Type</th>
 							<th>Status</th>
+							<th>Company Address</th>
+							<th>Company Contact</th>
+							<th>Company Email</th>
 							<th>Action</th>
 							
 						</tr>
@@ -47,6 +52,11 @@
 								<td class="align-items-center">
 									<p class="truncate-1"><?= strip_tags(htmlspecialchars_decode($row['description'])) ?></p>
 								</td>
+								<!-- Added Price details and Price type with truncation -->
+								<td class="align-items-center">
+									<p class="truncate-1"><?= strip_tags(htmlspecialchars_decode($row['price_details'])) ?></p>
+								</td>
+								<td class="align-items-center"><?= htmlspecialchars($row['price_type']) ?></td>
 								<td class="align-items-center text-center">
 									<?php if($row['status'] == 1): ?>
 										<span class="badge bg-success px-3 rounded-pill">Active</span>
@@ -54,6 +64,9 @@
 										<span class="badge bg-danger px-3 rounded-pill">Inactive</span>
 									<?php endif; ?>
 								</td>
+								<td class="align-items-center"><?= htmlspecialchars($row['company_address']) ?></td>
+								<td class="align-items-center"><?= htmlspecialchars($row['company_contact']) ?></td>
+								<td class="align-items-center"><?= htmlspecialchars($row['company_email']) ?></td>
 								<td class="align-items-center" align="center">
 									<div class="dropdown">
 										<button type="button" class="btn btn-flat p-1 btn-default btn-sm border dropdown-toggle dropdown-icon" data-bs-toggle="dropdown">
