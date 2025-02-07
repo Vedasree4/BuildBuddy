@@ -1,3 +1,4 @@
+
 <h1 class="pageTitle text-center">Our Services</h1>
 <hr class="mx-auto bg-primary border-primary opacity-100" style="width:50px">
 <div class="container-sm">
@@ -21,9 +22,17 @@
     <div id="service-list">
         <?php if(count($services) > 0): ?>
         <?php foreach($services as $row): ?>
-        <a href="<?= base_url.'?page=services/view&id='.$row['id'] ?>" 
-           class="service-item text-decoration-none text-reset" 
-           data-category="<?= htmlspecialchars($row['category']) ?>">
+
+        <div class="service-item text-decoration-none text-reset" 
+           data-category="<?= htmlspecialchars($row['category']) ?>"
+           data-name="<?= htmlspecialchars($row['name']) ?>"
+           
+           data-description="<?= htmlspecialchars($row['description']) ?>"
+           data-address="<?= htmlspecialchars($row['company_address']) ?>"
+           data-contact="<?= htmlspecialchars($row['company_contact']) ?>"
+           data-email="<?= htmlspecialchars($row['company_email']) ?>"
+           data-price="<?= htmlspecialchars($row['price_details']) ?>"
+           data-price-type="<?= htmlspecialchars($row['price_type']) ?>">
             <div class="card mb-3">
                 <div class="service-card-img">
                     <img src="<?= validate_image($row['image_path']) ?>" alt="">
@@ -31,9 +40,11 @@
                 <div class="card-body pt-3">
                     <h4 class="card-title"><?= htmlspecialchars($row['name']) ?></h4>
                     <p class="truncate-3"><?= strip_tags(htmlspecialchars_decode($row['description'])) ?></p>
+                    <p><strong>Price:</strong> <?= htmlspecialchars($row['price_details']) ?></p>
+                    <p><strong>Price Type:</strong> <?= htmlspecialchars($row['price_type']) ?></p>
                 </div>
             </div>
-        </a>
+        </div>
         <?php endforeach; ?>
         <?php endif; ?>
     </div>
@@ -41,6 +52,32 @@
     <?php if(count($services) <= 0): ?>
         <div class="text-muted text-center">No Service Listed Yet</div>
     <?php endif; ?>
+</div>
+
+<!-- Modal Structure -->
+<div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="serviceModalLabel"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p id="serviceDescription"></p>
+        <hr>
+        <h6>Company Details:</h6>
+        <p><strong>Address:</strong> <span id="serviceAddress"></span></p>
+        <p><strong>Contact:</strong> <span id="serviceContact"></span></p>
+        <p><strong>Email:</strong> <span id="serviceEmail"></span></p>
+        <hr>
+        <p><strong>Price:</strong> <span id="servicePrice"></span></p>
+        <p><strong>Price Type:</strong> <span id="servicePriceType"></span></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -62,39 +99,24 @@
                 });
             });
         });
+
+        // Handle service item click
+        serviceItems.forEach(item => {
+            item.addEventListener("click", () => {
+                document.getElementById("serviceModalLabel").innerText = item.getAttribute("data-name");
+
+                document.getElementById("serviceDescription").innerHTML = item.getAttribute("data-description");
+
+                document.getElementById("serviceAddress").innerText = item.getAttribute("data-address");
+                document.getElementById("serviceContact").innerText = item.getAttribute("data-contact");
+                document.getElementById("serviceEmail").innerText = item.getAttribute("data-email");
+                document.getElementById("servicePrice").innerText = item.getAttribute("data-price");
+                document.getElementById("servicePriceType").innerText = item.getAttribute("data-price-type");
+
+                // Show Bootstrap modal
+                var serviceModal = new bootstrap.Modal(document.getElementById('serviceModal'));
+                serviceModal.show();
+            });
+        });
     });
 </script>
-
-
-
-
-<!-- prev code -->
-<!-- <h1 class="pageTitle text-center">Our Services</h1>
-<hr class="mx-auto bg-primary border-primary opacity-100" style="width:50px">
-<div class="container-sm">
-    <?php 
-    $services = $conn->query("SELECT * FROM `service_list` where `status` = 1 order by `name` asc")->fetch_all(MYSQLI_ASSOC);
-
-    ?>
-    <div id="service-list">
-        <?php if(count($services) > 0): ?>
-        <?php foreach($services as $row): ?>
-        <a href="<?= base_url.'?page=services/view&id='.$row['id'] ?>" class="service-item text-decoration-none text-reset">
-            <div class="card">
-                <div class="service-card-img">
-                    <img src="<?= validate_image($row['image_path']) ?>" alt="">
-                </div>
-                <div class="card-body pt-3">
-                    <h4 class="card-title"><?= $row['name'] ?></h4>
-                    <p class="truncate-3"><?= strip_tags(htmlspecialchars_decode($row['description'])) ?></p>
-                </div>
-            </div>
-        </a>
-        <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
-    <?php if(count($services) <= 0): ?>
-        <div class="text-muted text-center">No Service Listed Yet</div>
-    <?php endif; ?>
-
-</div> -->
