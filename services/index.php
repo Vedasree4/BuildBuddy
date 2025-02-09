@@ -1,10 +1,13 @@
-
 <h1 class="pageTitle text-center">Our Services</h1>
 <hr class="mx-auto bg-primary border-primary opacity-100" style="width:50px">
 <div class="container-sm">
     <?php 
     // Fetch all categories
     $categories = $conn->query("SELECT DISTINCT `category` FROM `service_list` WHERE `status` = 1 ORDER BY `category` ASC")->fetch_all(MYSQLI_ASSOC);
+
+    // Fetch all distinct service types
+    $service_types = $conn->query("SELECT DISTINCT `price_type` FROM `service_list` WHERE `status` = 1 ORDER BY `price_type` ASC")->fetch_all(MYSQLI_ASSOC);
+
     // Fetch all services
     $services = $conn->query("SELECT * FROM `service_list` WHERE `status` = 1 ORDER BY `name` ASC")->fetch_all(MYSQLI_ASSOC);
     ?>
@@ -18,15 +21,26 @@
         <?php endforeach; ?>
     </div>
 
+    <!-- Service Type Dropdown Filter -->
+    <div id="service-type-filter" class="mb-4 text-center">
+        <label for="serviceTypeDropdown" class="form-label">Select Service Type:</label>
+        <select class="form-select" id="serviceTypeDropdown">
+            <option value="All">All Types</option>
+            <?php foreach($service_types as $type): ?>
+                <option value="<?= htmlspecialchars($type['price_type']) ?>">
+                    <?= htmlspecialchars($type['price_type']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
     <!-- Services -->
     <div id="service-list">
         <?php if(count($services) > 0): ?>
         <?php foreach($services as $row): ?>
-
         <div class="service-item text-decoration-none text-reset" 
            data-category="<?= htmlspecialchars($row['category']) ?>"
            data-name="<?= htmlspecialchars($row['name']) ?>"
-           
            data-description="<?= htmlspecialchars($row['description']) ?>"
            data-address="<?= htmlspecialchars($row['company_address']) ?>"
            data-contact="<?= htmlspecialchars($row['company_contact']) ?>"
@@ -83,30 +97,51 @@
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const categoryButtons = document.querySelectorAll(".category-btn");
+        const serviceTypeDropdown = document.getElementById("serviceTypeDropdown");
         const serviceItems = document.querySelectorAll(".service-item");
 
+        let selectedCategory = null;
+        let selectedServiceType = "All"; // Default to showing all types
+
+        // Category filter
         categoryButtons.forEach(button => {
             button.addEventListener("click", () => {
-                const selectedCategory = button.getAttribute("data-category");
+                selectedCategory = button.getAttribute("data-category");
 
-                // Filter services based on the selected category
-                serviceItems.forEach(item => {
-                    if (item.getAttribute("data-category") === selectedCategory) {
-                        item.style.display = "block";
-                    } else {
-                        item.style.display = "none";
-                    }
-                });
+                // Apply the filter logic
+                filterServices();
             });
         });
 
-        // Handle service item click
+        // Service Type dropdown filter
+        serviceTypeDropdown.addEventListener("change", () => {
+            selectedServiceType = serviceTypeDropdown.value;
+
+            // Apply the filter logic
+            filterServices();
+        });
+
+        // Filter services based on both category and service type
+        function filterServices() {
+            serviceItems.forEach(item => {
+                const itemCategory = item.getAttribute("data-category");
+                const itemServiceType = item.getAttribute("data-price-type");
+
+                // Show item if it matches the selected filters
+                if ((selectedCategory === null || itemCategory === selectedCategory) &&
+                    (selectedServiceType === "All" || itemServiceType === selectedServiceType)) {
+                    item.style.display = "block";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        }
+
+        // Handle service item click (show modal with service details)
         serviceItems.forEach(item => {
             item.addEventListener("click", () => {
                 document.getElementById("serviceModalLabel").innerText = item.getAttribute("data-name");
-
                 document.getElementById("serviceDescription").innerHTML = item.getAttribute("data-description");
-
                 document.getElementById("serviceAddress").innerText = item.getAttribute("data-address");
                 document.getElementById("serviceContact").innerText = item.getAttribute("data-contact");
                 document.getElementById("serviceEmail").innerText = item.getAttribute("data-email");
