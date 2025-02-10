@@ -2,36 +2,43 @@
 <hr class="mx-auto bg-primary border-primary opacity-100" style="width:50px">
 <div class="container-sm">
     <?php 
-    // Fetch all categories
     $categories = $conn->query("SELECT DISTINCT `category` FROM `service_list` WHERE `status` = 1 ORDER BY `category` ASC")->fetch_all(MYSQLI_ASSOC);
-
-    // Fetch all distinct service types
-    $service_types = $conn->query("SELECT DISTINCT `price_type` FROM `service_list` WHERE `status` = 1 ORDER BY `price_type` ASC")->fetch_all(MYSQLI_ASSOC);
-
-    // Fetch all services
     $services = $conn->query("SELECT * FROM `service_list` WHERE `status` = 1 ORDER BY `name` ASC")->fetch_all(MYSQLI_ASSOC);
     ?>
 
-    <!-- Categories -->
-    <div id="categories" class="mb-4 text-center">
-        <?php foreach($categories as $cat): ?>
-            <button class="btn btn-outline-primary category-btn" data-category="<?= htmlspecialchars($cat['category']) ?>">
-                <?= htmlspecialchars($cat['category']) ?>
-            </button>
-        <?php endforeach; ?>
-    </div>
+    <!-- Filters Container -->
+    <div class="row mb-4">
+        <!-- Category Filter -->
+        <div class="col-md-3">
+            <select class="form-select" id="categoryFilter">
+                <option value="all">All Categories</option>
+                <?php foreach($categories as $cat): ?>
+                    <option value="<?= htmlspecialchars($cat['category']) ?>">
+                        <?= htmlspecialchars($cat['category']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        
+        <!-- Price Filter -->
+        <div class="col-md-3">
+            <select class="form-select" id="priceFilter">
+                <option value="all">All Prices</option>
+                <option value="0-1000">$0 - $1,000</option>
+                <option value="1001-5000">$1,001 - $5,000</option>
+                <option value="5001-10000">$5,001 - $10,000</option>
+                <option value="10001+">$10,001+</option>
+            </select>
+        </div>
 
-    <!-- Service Type Dropdown Filter -->
-    <div id="service-type-filter" class="mb-4 text-center">
-        <label for="serviceTypeDropdown" class="form-label">Select Service Type:</label>
-        <select class="form-select" id="serviceTypeDropdown">
-            <option value="All">All Types</option>
-            <?php foreach($service_types as $type): ?>
-                <option value="<?= htmlspecialchars($type['price_type']) ?>">
-                    <?= htmlspecialchars($type['price_type']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+        <!-- Price Type Filter -->
+        <div class="col-md-3">
+            <select class="form-select" id="priceTypeFilter">
+                <option value="all">All Price Types</option>
+                <option value="fixed">Fixed</option>
+                <option value="negotiable">Negotiable</option>
+            </select>
+        </div>
     </div>
 
     <!-- Services -->
@@ -41,6 +48,7 @@
         <div class="service-item text-decoration-none text-reset" 
            data-category="<?= htmlspecialchars($row['category']) ?>"
            data-name="<?= htmlspecialchars($row['name']) ?>"
+           data-price-amount="<?= htmlspecialchars(preg_replace('/[^0-9.]/', '', $row['price_details'])) ?>"
            data-description="<?= htmlspecialchars($row['description']) ?>"
            data-address="<?= htmlspecialchars($row['company_address']) ?>"
            data-contact="<?= htmlspecialchars($row['company_contact']) ?>"
@@ -55,12 +63,14 @@
                     <h4 class="card-title"><?= htmlspecialchars($row['name']) ?></h4>
                     <p class="truncate-3"><?= strip_tags(htmlspecialchars_decode($row['description'])) ?></p>
                     <p><strong>Price:</strong> <?= htmlspecialchars($row['price_details']) ?></p>
-                    <p><strong>Price Type:</strong> <?= htmlspecialchars($row['price_type']) ?></p>
+                    <p><strong>Price Type:</strong> <?= ucfirst(htmlspecialchars($row['price_type'])) ?></p>
                 </div>
             </div>
         </div>
         <?php endforeach; ?>
         <?php endif; ?>
+        <!-- Message for no matching services after filtering -->
+        <p id="noResultsMessage" class="text-muted text-center" style="display: none;">No services match your selected filters.</p>
     </div>
 
     <?php if(count($services) <= 0): ?>
@@ -68,90 +78,68 @@
     <?php endif; ?>
 </div>
 
-<!-- Modal Structure -->
-<div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="serviceModalLabel"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p id="serviceDescription"></p>
-        <hr>
-        <h6>Company Details:</h6>
-        <p><strong>Address:</strong> <span id="serviceAddress"></span></p>
-        <p><strong>Contact:</strong> <span id="serviceContact"></span></p>
-        <p><strong>Email:</strong> <span id="serviceEmail"></span></p>
-        <hr>
-        <p><strong>Price:</strong> <span id="servicePrice"></span></p>
-        <p><strong>Price Type:</strong> <span id="servicePriceType"></span></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const categoryButtons = document.querySelectorAll(".category-btn");
-        const serviceTypeDropdown = document.getElementById("serviceTypeDropdown");
-        const serviceItems = document.querySelectorAll(".service-item");
+document.addEventListener("DOMContentLoaded", () => {
+    const serviceItems = document.querySelectorAll(".service-item");
+    const categoryFilter = document.getElementById("categoryFilter");
+    const priceFilter = document.getElementById("priceFilter");
+    const priceTypeFilter = document.getElementById("priceTypeFilter");
+    
+    function filterServices() {
+        const selectedCategory = categoryFilter.value;
+        const selectedPriceRange = priceFilter.value;
+        const selectedPriceType = priceTypeFilter.value;
+        let visibleCount = 0;
 
-        let selectedCategory = null;
-        let selectedServiceType = "All"; // Default to showing all types
-
-        // Category filter
-        categoryButtons.forEach(button => {
-            button.addEventListener("click", () => {
-                selectedCategory = button.getAttribute("data-category");
-
-                // Apply the filter logic
-                filterServices();
-            });
-        });
-
-        // Service Type dropdown filter
-        serviceTypeDropdown.addEventListener("change", () => {
-            selectedServiceType = serviceTypeDropdown.value;
-
-            // Apply the filter logic
-            filterServices();
-        });
-
-        // Filter services based on both category and service type
-        function filterServices() {
-            serviceItems.forEach(item => {
-                const itemCategory = item.getAttribute("data-category");
-                const itemServiceType = item.getAttribute("data-price-type");
-
-                // Show item if it matches the selected filters
-                if ((selectedCategory === null || itemCategory === selectedCategory) &&
-                    (selectedServiceType === "All" || itemServiceType === selectedServiceType)) {
-                    item.style.display = "block";
-                } else {
-                    item.style.display = "none";
-                }
-            });
-        }
-
-        // Handle service item click (show modal with service details)
         serviceItems.forEach(item => {
-            item.addEventListener("click", () => {
-                document.getElementById("serviceModalLabel").innerText = item.getAttribute("data-name");
-                document.getElementById("serviceDescription").innerHTML = item.getAttribute("data-description");
-                document.getElementById("serviceAddress").innerText = item.getAttribute("data-address");
-                document.getElementById("serviceContact").innerText = item.getAttribute("data-contact");
-                document.getElementById("serviceEmail").innerText = item.getAttribute("data-email");
-                document.getElementById("servicePrice").innerText = item.getAttribute("data-price");
-                document.getElementById("servicePriceType").innerText = item.getAttribute("data-price-type");
+            const itemCategory = item.getAttribute("data-category");
+            const itemPrice = parseFloat(item.getAttribute("data-price-amount")) || 0;
+            const itemPriceType = item.getAttribute("data-price-type");
+            
+            let showByCategory = selectedCategory === "all" || itemCategory === selectedCategory;
+            let showByPrice = true;
+            let showByPriceType = selectedPriceType === "all" || itemPriceType === selectedPriceType;
 
-                // Show Bootstrap modal
-                var serviceModal = new bootstrap.Modal(document.getElementById('serviceModal'));
-                serviceModal.show();
-            });
+            if (selectedPriceRange !== "all") {
+                const [min, max] = selectedPriceRange.split("-").map(num => 
+                    num.endsWith("+") ? Infinity : parseFloat(num)
+                );
+                showByPrice = itemPrice >= min && (max === Infinity || itemPrice <= max);
+            }
+
+            if (showByCategory && showByPrice && showByPriceType) {
+                item.style.display = "block";
+                visibleCount++;
+            } else {
+                item.style.display = "none";
+            }
+        });
+
+        document.getElementById("noResultsMessage").style.display = visibleCount === 0 ? "block" : "none";
+    }
+
+    // Add event listeners for all filters
+    categoryFilter.addEventListener("change", filterServices);
+    priceFilter.addEventListener("change", filterServices);
+    priceTypeFilter.addEventListener("change", filterServices);
+
+    // Initial filter on page load
+    filterServices();
+
+    // Service item click handler (for modal)
+    serviceItems.forEach(item => {
+        item.addEventListener("click", () => {
+            document.getElementById("serviceModalLabel").innerText = item.getAttribute("data-name");
+            document.getElementById("serviceDescription").innerHTML = item.getAttribute("data-description");
+            document.getElementById("serviceAddress").innerText = item.getAttribute("data-address");
+            document.getElementById("serviceContact").innerText = item.getAttribute("data-contact");
+            document.getElementById("serviceEmail").innerText = item.getAttribute("data-email");
+            document.getElementById("servicePrice").innerText = item.getAttribute("data-price");
+            document.getElementById("servicePriceType").innerText = ucfirst(item.getAttribute("data-price-type"));
+
+            var serviceModal = new bootstrap.Modal(document.getElementById('serviceModal'));
+            serviceModal.show();
         });
     });
+});
 </script>
