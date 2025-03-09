@@ -3,12 +3,12 @@
 <div class="container-sm">
     <?php 
     $categories = $conn->query("SELECT DISTINCT `category` FROM `service_list` WHERE `status` = 1 ORDER BY `category` ASC")->fetch_all(MYSQLI_ASSOC);
+    $locations = $conn->query("SELECT DISTINCT `company_address` FROM `service_list` WHERE `status` = 1 ORDER BY `company_address` ASC")->fetch_all(MYSQLI_ASSOC);
     $services = $conn->query("SELECT * FROM `service_list` WHERE `status` = 1 ORDER BY `name` ASC")->fetch_all(MYSQLI_ASSOC);
     ?>
 
     <!-- Filters Container -->
     <div class="row mb-4">
-        <!-- Category Filter -->
         <div class="col-md-3">
             <select class="form-select" id="categoryFilter">
                 <option value="all">All Categories</option>
@@ -19,8 +19,7 @@
                 <?php endforeach; ?>
             </select>
         </div>
-        
-        <!-- Price Filter -->
+
         <div class="col-md-3">
             <select class="form-select" id="priceFilter">
                 <option value="all">All Prices</option>
@@ -31,7 +30,6 @@
             </select>
         </div>
 
-        <!-- Price Type Filter -->
         <div class="col-md-3">
             <select class="form-select" id="priceTypeFilter">
                 <option value="all">All Price Types</option>
@@ -39,9 +37,21 @@
                 <option value="negotiable">Negotiable</option>
             </select>
         </div>
+
+        <!-- Location Filter -->
+        <div class="col-md-3">
+            <select class="form-select" id="locationFilter">
+                <option value="all">All Locations</option>
+                <?php foreach($locations as $loc): ?>
+                    <option value="<?= htmlspecialchars($loc['company_address']) ?>">
+                        <?= htmlspecialchars($loc['company_address']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
     </div>
 
-    <!-- Services -->
+    <!-- Services List -->
     <div id="service-list">
         <?php if(count($services) > 0): ?>
         <?php foreach($services as $row): ?>
@@ -62,6 +72,7 @@
                 <div class="card-body pt-3">
                     <h4 class="card-title"><?= htmlspecialchars($row['name']) ?></h4>
                     <p class="truncate-3"><?= strip_tags(htmlspecialchars_decode($row['description'])) ?></p>
+                    <p><strong>Location:</strong> <?= htmlspecialchars($row['company_address']) ?></p>
                     <p><strong>Price:</strong> <?= htmlspecialchars($row['price_details']) ?></p>
                     <p><strong>Price Type:</strong> <?= ucfirst(htmlspecialchars($row['price_type'])) ?></p>
                 </div>
@@ -69,7 +80,7 @@
         </div>
         <?php endforeach; ?>
         <?php endif; ?>
-        <!-- Message for no matching services after filtering -->
+        
         <p id="noResultsMessage" class="text-muted text-center" style="display: none;">No services match your selected filters.</p>
     </div>
 
@@ -78,36 +89,61 @@
     <?php endif; ?>
 </div>
 
+<!-- Service Modal -->
+<div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="serviceModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Description:</strong> <span id="serviceDescription"></span></p>
+                <p><strong>Location:</strong> <span id="serviceAddress"></span></p>
+                <p><strong>Contact:</strong> <span id="serviceContact"></span></p>
+                <p><strong>Email:</strong> <span id="serviceEmail"></span></p>
+                <p><strong>Price:</strong> <span id="servicePrice"></span></p>
+                <p><strong>Price Type:</strong> <span id="servicePriceType"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const serviceItems = document.querySelectorAll(".service-item");
+    const serviceList = document.getElementById("service-list");
     const categoryFilter = document.getElementById("categoryFilter");
     const priceFilter = document.getElementById("priceFilter");
     const priceTypeFilter = document.getElementById("priceTypeFilter");
-    
+    const locationFilter = document.getElementById("locationFilter");
+
     function filterServices() {
         const selectedCategory = categoryFilter.value;
         const selectedPriceRange = priceFilter.value;
         const selectedPriceType = priceTypeFilter.value;
+        const selectedLocation = locationFilter.value;
         let visibleCount = 0;
 
-        serviceItems.forEach(item => {
+        document.querySelectorAll(".service-item").forEach(item => {
             const itemCategory = item.getAttribute("data-category");
             const itemPrice = parseFloat(item.getAttribute("data-price-amount")) || 0;
             const itemPriceType = item.getAttribute("data-price-type");
-            
+            const itemLocation = item.getAttribute("data-address");
+
             let showByCategory = selectedCategory === "all" || itemCategory === selectedCategory;
             let showByPrice = true;
             let showByPriceType = selectedPriceType === "all" || itemPriceType === selectedPriceType;
+            let showByLocation = selectedLocation === "all" || itemLocation === selectedLocation;
 
             if (selectedPriceRange !== "all") {
-                const [min, max] = selectedPriceRange.split("-").map(num => 
-                    num.endsWith("+") ? Infinity : parseFloat(num)
-                );
+                const [min, max] = selectedPriceRange.split("-").map(num => num.endsWith("+") ? Infinity : parseFloat(num));
                 showByPrice = itemPrice >= min && (max === Infinity || itemPrice <= max);
             }
 
-            if (showByCategory && showByPrice && showByPriceType) {
+            if (showByCategory && showByPrice && showByPriceType && showByLocation) {
                 item.style.display = "block";
                 visibleCount++;
             } else {
@@ -118,28 +154,25 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("noResultsMessage").style.display = visibleCount === 0 ? "block" : "none";
     }
 
-    // Add event listeners for all filters
     categoryFilter.addEventListener("change", filterServices);
     priceFilter.addEventListener("change", filterServices);
     priceTypeFilter.addEventListener("change", filterServices);
-
-    // Initial filter on page load
+    locationFilter.addEventListener("change", filterServices);
     filterServices();
+    document.querySelectorAll(".service-item").forEach(item => {
+    item.addEventListener("click", () => {
+        document.getElementById("serviceModalLabel").textContent = item.getAttribute("data-name");
+        document.getElementById("serviceDescription").textContent = item.getAttribute("data-description");
+        document.getElementById("serviceAddress").textContent = item.getAttribute("data-address");
+        document.getElementById("serviceContact").textContent = item.getAttribute("data-contact");
+        document.getElementById("serviceEmail").textContent = item.getAttribute("data-email");
+        document.getElementById("servicePrice").textContent = item.getAttribute("data-price");
+        document.getElementById("servicePriceType").textContent = item.getAttribute("data-price-type");
 
-    // Service item click handler (for modal)
-    serviceItems.forEach(item => {
-        item.addEventListener("click", () => {
-            document.getElementById("serviceModalLabel").innerText = item.getAttribute("data-name");
-            document.getElementById("serviceDescription").innerHTML = item.getAttribute("data-description");
-            document.getElementById("serviceAddress").innerText = item.getAttribute("data-address");
-            document.getElementById("serviceContact").innerText = item.getAttribute("data-contact");
-            document.getElementById("serviceEmail").innerText = item.getAttribute("data-email");
-            document.getElementById("servicePrice").innerText = item.getAttribute("data-price");
-            document.getElementById("servicePriceType").innerText = ucfirst(item.getAttribute("data-price-type"));
-
-            var serviceModal = new bootstrap.Modal(document.getElementById('serviceModal'));
-            serviceModal.show();
-        });
+        var serviceModal = new bootstrap.Modal(document.getElementById("serviceModal"));
+        serviceModal.show();
     });
+});
+
 });
 </script>
